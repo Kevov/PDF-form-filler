@@ -22,14 +22,25 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const raw = fs.readFileSync(dataJson, 'utf-8');
-  const formData: FormData = JSON.parse(raw);
+  let formData: FormData;
+  try {
+    const raw = fs.readFileSync(dataJson, 'utf-8');
+    formData = JSON.parse(raw);
+  } catch (err: any) {
+    console.error(`Failed to parse JSON file "${dataJson}": ${err.message}`);
+    process.exit(1);
+  }
 
-  await fillPdfForm(inputPdf, formData, outputPdf);
-  console.log(`Filled PDF written to: ${path.resolve(outputPdf)}`);
+  try {
+    await fillPdfForm(inputPdf, formData, outputPdf);
+    console.log(`Filled PDF written to: ${path.resolve(outputPdf)}`);
+  } catch (err: any) {
+    console.error(`Error filling PDF: ${err.message}`);
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
-  console.error('Error:', err.message);
+  console.error('Unexpected error:', err.message);
   process.exit(1);
 });

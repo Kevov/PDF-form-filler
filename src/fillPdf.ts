@@ -1,4 +1,4 @@
-import { PDFDocument, PDFCheckBox, PDFTextField, PDFDropdown } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import * as fs from 'fs';
 import { FormData, ClaimReason } from './types';
 
@@ -7,17 +7,42 @@ export async function fillPdfForm(
   formData: FormData,
   outputPdfPath: string
 ): Promise<void> {
-  const pdfBytes = fs.readFileSync(inputPdfPath);
-  const pdfDoc = await PDFDocument.load(pdfBytes);
+  if (!inputPdfPath) {
+    throw new Error('Input PDF path is required');
+  }
+
+  if (!outputPdfPath) {
+    throw new Error('Output PDF path is required');
+  }
+
+  if (!formData) {
+    throw new Error('Form data is required');
+  }
+
+  validateFormData(formData);
+
+  let pdfBytes: Buffer;
+  try {
+    pdfBytes = fs.readFileSync(inputPdfPath);
+  } catch (err: any) {
+    throw new Error(`Failed to read input PDF "${inputPdfPath}": ${err.message}`);
+  }
+
+  let pdfDoc: PDFDocument;
+  try {
+    pdfDoc = await PDFDocument.load(pdfBytes);
+  } catch (err: any) {
+    throw new Error(`Failed to parse PDF "${inputPdfPath}": ${err.message}`);
+  }
+
   const form = pdfDoc.getForm();
 
   function setText(fieldName: string, value: string | undefined): void {
     if (value === undefined) return;
     try {
-      const field = form.getTextField(fieldName);
-      field.setText(value);
-    } catch {
-      // field not found or wrong type — skip silently
+      form.getTextField(fieldName).setText(value);
+    } catch (err: any) {
+      throw new Error(`Failed to set text field "${fieldName}": ${err.message}`);
     }
   }
 
@@ -25,18 +50,17 @@ export async function fillPdfForm(
     try {
       const field = form.getCheckBox(fieldName);
       checked ? field.check() : field.uncheck();
-    } catch {
-      // field not found — skip silently
+    } catch (err: any) {
+      throw new Error(`Failed to set checkbox "${fieldName}": ${err.message}`);
     }
   }
 
   function setDropdown(fieldName: string, value: string | undefined): void {
     if (value === undefined) return;
     try {
-      const field = form.getDropdown(fieldName);
-      field.select(value);
-    } catch {
-      // field not found or invalid option — skip silently
+      form.getDropdown(fieldName).select(value);
+    } catch (err: any) {
+      throw new Error(`Failed to set dropdown "${fieldName}": ${err.message}`);
     }
   }
 
@@ -150,6 +174,85 @@ export async function fillPdfForm(
   setText('signed_Date', formData.signature.date);
   setText('signed_plaintiff_name', formData.signature.plaintiffName);
 
-  const filledBytes = await pdfDoc.save();
-  fs.writeFileSync(outputPdfPath, filledBytes);
+  let filledBytes: Uint8Array;
+  try {
+    filledBytes = await pdfDoc.save();
+  } catch (err: any) {
+    throw new Error(`Failed to serialise filled PDF: ${err.message}`);
+  }
+
+  try {
+    fs.writeFileSync(outputPdfPath, filledBytes);
+  } catch (err: any) {
+    throw new Error(`Failed to write output PDF "${outputPdfPath}": ${err.message}`);
+  }
+}
+
+export function validateFormData(formData: FormData): void {
+  if (!formData.plaintiffs?.[0]) {
+    throw new Error('At least one plaintiff is required');
+  }
+
+  if (!formData.plaintiffs[0].name?.trim()) {
+    throw new Error('Plaintiff 1 name is required');
+  }
+
+  if (!formData.defendants?.[0]) {
+    throw new Error('At least one defendant is required');
+  }
+
+  if (!formData.defendants[0].name?.trim()) {
+    throw new Error('Defendant 1 name is required');
+  }
+
+  if (!formData.claimAmount?.trim()) {
+    throw new Error('Claim amount is required');
+  }
+
+  if (!formData.incidentDate?.trim()) {
+    throw new Error('Incident date is required');
+  }
+
+  if (!formData.claim) {
+    throw new Error('Claim details are required');
+  }
+
+  if (!formData.claim.reasons || formData.claim.reasons.length === 0) {
+    throw new Error('At least one claim reason is required');
+  }
+
+  if (!formData.claim.explanation?.trim()) {
+    throw new Error('Claim explanation is required');
+  }
+
+  if (!formData.serviceMemberCivilRelief?.status) {
+    throw new Error('Servicemember civil relief status is required');
+  }
+
+  const validStatuses = ['yes', 'no', 'unknown'];
+  if (!validStatuses.includes(formData.serviceMemberCivilRelief.status)) {
+    throw new Error(
+      `Invalid servicemember civil relief status: "${formData.serviceMemberCivilRelief.status}". Must be "yes", "no", or "unknown"`
+    );
+  }
+
+  if (!formData.signature) {
+    throw new Error('Signature block is required');
+  }
+
+  if (!formData.signature.city?.trim()) {
+    throw new Error('Signature city is required');
+  }
+
+  if (!formData.signature.state?.trim()) {
+    throw new Error('Signature state is required');
+  }
+
+  if (!formData.signature.date?.trim()) {
+    throw new Error('Signature date is required');
+  }
+
+  if (!formData.signature.plaintiffName?.trim()) {
+    throw new Error('Signature plaintiff name is required');
+  }
 }

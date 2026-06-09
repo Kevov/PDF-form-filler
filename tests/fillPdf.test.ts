@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { PDFDocument } from 'pdf-lib';
-import { fillPdfForm } from '../src/fillPdf';
+import { fillPdfForm, validateFormData } from '../src/fillPdf';
 import { FormData } from '../src/types';
 
 const INPUT_PDF = path.join(__dirname, '..', 'notice-of-small-claim-september-2025.pdf');
@@ -62,7 +62,9 @@ async function fillAndRead(data: FormData): Promise<ReturnType<PDFDocument['getF
   return doc.getForm();
 }
 
-describe('fillPdfForm', () => {
+// ─── Happy-path tests ───────────────────────────────────────────────────────
+
+describe('fillPdfForm — happy path', () => {
   it('writes the output file', async () => {
     const tmp = path.join(os.tmpdir(), `test-exists-${Date.now()}.pdf`);
     await fillPdfForm(INPUT_PDF, baseFormData, tmp);
@@ -245,5 +247,183 @@ describe('fillPdfForm', () => {
     expect(form.getCheckBox('Intepreter_yes').isChecked()).toBe(true);
     expect(form.getTextField('intepreter_Name_1').getText()).toBe('Carlos Interpreter');
     expect(form.getTextField('intepreter_Language_1').getText()).toBe('Spanish');
+  });
+});
+
+// ─── Error-handling tests ───────────────────────────────────────────────────
+
+describe('fillPdfForm — error handling', () => {
+  it('throws when input PDF path does not exist', async () => {
+    const tmp = path.join(os.tmpdir(), `out-${Date.now()}.pdf`);
+    await expect(
+      fillPdfForm('/nonexistent/path/form.pdf', baseFormData, tmp)
+    ).rejects.toThrow('Failed to read input PDF');
+  });
+
+  it('throws when input PDF path is an empty string', async () => {
+    const tmp = path.join(os.tmpdir(), `out-${Date.now()}.pdf`);
+    await expect(fillPdfForm('', baseFormData, tmp)).rejects.toThrow(
+      'Input PDF path is required'
+    );
+  });
+
+  it('throws when output PDF path is an empty string', async () => {
+    await expect(fillPdfForm(INPUT_PDF, baseFormData, '')).rejects.toThrow(
+      'Output PDF path is required'
+    );
+  });
+
+  it('throws when output directory does not exist', async () => {
+    await expect(
+      fillPdfForm(INPUT_PDF, baseFormData, '/nonexistent/dir/output.pdf')
+    ).rejects.toThrow('Failed to write output PDF');
+  });
+
+  it('throws when form data is null', async () => {
+    const tmp = path.join(os.tmpdir(), `out-${Date.now()}.pdf`);
+    await expect(fillPdfForm(INPUT_PDF, null as any, tmp)).rejects.toThrow(
+      'Form data is required'
+    );
+  });
+
+  it('throws when the input file is not a valid PDF', async () => {
+    const notAPdf = path.join(os.tmpdir(), `not-a-pdf-${Date.now()}.pdf`);
+    fs.writeFileSync(notAPdf, 'this is not a pdf');
+    try {
+      await expect(fillPdfForm(notAPdf, baseFormData, path.join(os.tmpdir(), 'out.pdf'))).rejects.toThrow(
+        'Failed to parse PDF'
+      );
+    } finally {
+      fs.unlinkSync(notAPdf);
+    }
+  });
+});
+
+describe('validateFormData', () => {
+  it('does not throw for valid form data', () => {
+    expect(() => validateFormData(baseFormData)).not.toThrow();
+  });
+
+  it('throws when plaintiffs array is empty', () => {
+    expect(() =>
+      validateFormData({ ...baseFormData, plaintiffs: [] as any })
+    ).toThrow('At least one plaintiff is required');
+  });
+
+  it('throws when plaintiff 1 name is missing', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        plaintiffs: [{ ...baseFormData.plaintiffs[0], name: '' }],
+      })
+    ).toThrow('Plaintiff 1 name is required');
+  });
+
+  it('throws when plaintiff 1 name is whitespace only', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        plaintiffs: [{ ...baseFormData.plaintiffs[0], name: '   ' }],
+      })
+    ).toThrow('Plaintiff 1 name is required');
+  });
+
+  it('throws when defendants array is empty', () => {
+    expect(() =>
+      validateFormData({ ...baseFormData, defendants: [] as any })
+    ).toThrow('At least one defendant is required');
+  });
+
+  it('throws when defendant 1 name is missing', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        defendants: [{ ...baseFormData.defendants[0], name: '' }],
+      })
+    ).toThrow('Defendant 1 name is required');
+  });
+
+  it('throws when claim amount is missing', () => {
+    expect(() =>
+      validateFormData({ ...baseFormData, claimAmount: '' })
+    ).toThrow('Claim amount is required');
+  });
+
+  it('throws when incident date is missing', () => {
+    expect(() =>
+      validateFormData({ ...baseFormData, incidentDate: '' })
+    ).toThrow('Incident date is required');
+  });
+
+  it('throws when claim reasons array is empty', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        claim: { ...baseFormData.claim, reasons: [] },
+      })
+    ).toThrow('At least one claim reason is required');
+  });
+
+  it('throws when claim explanation is missing', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        claim: { ...baseFormData.claim, explanation: '' },
+      })
+    ).toThrow('Claim explanation is required');
+  });
+
+  it('throws when claim explanation is whitespace only', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        claim: { ...baseFormData.claim, explanation: '   ' },
+      })
+    ).toThrow('Claim explanation is required');
+  });
+
+  it('throws when servicemember civil relief status is invalid', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        serviceMemberCivilRelief: { status: 'maybe' as any },
+      })
+    ).toThrow('Invalid servicemember civil relief status');
+  });
+
+  it('throws when signature city is missing', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        signature: { ...baseFormData.signature, city: '' },
+      })
+    ).toThrow('Signature city is required');
+  });
+
+  it('throws when signature state is missing', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        signature: { ...baseFormData.signature, state: '' },
+      })
+    ).toThrow('Signature state is required');
+  });
+
+  it('throws when signature date is missing', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        signature: { ...baseFormData.signature, date: '' },
+      })
+    ).toThrow('Signature date is required');
+  });
+
+  it('throws when signature plaintiff name is missing', () => {
+    expect(() =>
+      validateFormData({
+        ...baseFormData,
+        signature: { ...baseFormData.signature, plaintiffName: '' },
+      })
+    ).toThrow('Signature plaintiff name is required');
   });
 });
