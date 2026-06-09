@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/khoaluong/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/f378052a-ede2-4ae4-9f0f-d4c03076bc53/81927921-07cd-436b-8064-93a4eef4cd81/skills/pdf/**)",
+      "Bash(python scripts/check_fillable_fields.py \"/Users/khoaluong/Desktop/PDF-form-filler/notice-of-small-claim-september-2025.pdf\")"
+    ]
+  }
+}

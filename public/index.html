@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notice of Small Claim</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      padding: 24px 16px 48px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 24px;
+      color: #1a1a2e;
+    }
+
+    .form-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    section h2 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #5a5a8a;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+    }
+
+    .grid.thirds { grid-template-columns: 2fr 1fr 1fr; }
+    .grid.full   { grid-template-columns: 1fr; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field.span2 { grid-column: span 2; }
+    .field.span3 { grid-column: span 3; }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    label .req { color: #e53935; margin-left: 2px; }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #d0d0e0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fafafa;
+      transition: border-color .15s, box-shadow .15s;
+      color: #1a1a2e;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+      background: #fff;
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 20px;
+    }
+
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .conditional { display: none; }
+    .conditional.visible { display: contents; }
+
+    .hint {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .party-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: #e53935;
+      margin-top: 3px;
+      display: none;
+    }
+
+    .field.invalid input,
+    .field.invalid select,
+    .field.invalid textarea {
+      border-color: #e53935;
+    }
+
+    .field.invalid .error-msg { display: block; }
+
+    .submit-row {
+      display: flex;
+      justify-content: center;
+    }
+
+    button[type="submit"] {
+      padding: 12px 40px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+
+    button[type="submit"]:hover { background: #4338ca; }
+    button[type="submit"]:active { transform: scale(.98); }
+    button[type="submit"]:disabled { background: #a5a5c0; cursor: not-allowed; }
+
+    #status {
+      text-align: center;
+      font-size: 13px;
+      min-height: 20px;
+      color: #4f46e5;
+    }
+
+    #status.error { color: #e53935; }
+
+    @media (max-width: 560px) {
+      .grid, .grid.thirds, .party-grid { grid-template-columns: 1fr; }
+      .field.span2, .field.span3 { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Notice of Small Claim</h1>
+
+  <form id="claimForm" class="form-wrap" novalidate>
+
+    <!-- Court Info -->
+    <section>
+      <h2>Court Information</h2>
+      <div class="grid full">
+        <div class="field">
+          <label for="division">Division</label>
+          <select id="division" name="division">
+            <option value=" ">— Select division —</option>
+            <option>East Division, Redmond Courthouse, 8601 160th Ave. N.E. Redmond, WA 98052</option>
+            <option>South Division, Burien Courthouse, 601 SW 149th St. Burien WA 98166</option>
+            <option>South Division, MRJC Courthouse, 401 4th Ave N., Kent, WA 98032</option>
+            <option>Vashon Courthouse, 10011 S.W. Bank Road, Vashon 98070</option>
+            <option>West Division, Seattle Courthouse, 516 3rd Ave, Room E-327 Seattle WA 98104</option>
+            <option>West Division, Shoreline Courthouse,  18050 Meridian Ave N shoreline WA 98133</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plaintiff 1 -->
+    <section>
+      <h2>Plaintiff 1</h2>
+      <div class="party-grid">
+        <div class="field span2">
+          <label for="p1_name">Full Name <span class="req">*</span></label>
+          <input type="text" id="p1_name" required placeholder="Full legal name" />
+          <span class="error-msg">Name is required</span>
+        </div>
+        <div class="field span2">
+          <label for="p1_address">Address</label>
+          <input type="text" id="p1_address" placeholder="Street address" />
+        </div>
+        <div class="field">
+          <label for="p1_city">City</label>
+          <input type="text" id="p1_city" placeholder="City" />
+        </div>
+        <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;grid-column:span 1;">
+          <div class="field">
+            <label for="p1_state">State</label>
+            <input type="text" id="p1_state" placeholder="WA" maxlength="2" />
+          </div>
+          <div class="field">
+            <label for="p1_zip">Zip</label>
+            <input type="text" id="p1_zip" placeholder="98101" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="p1_phone">Phone</label>
+          <input type="tel" id="p1_phone" placeholder="206-555-0000" />
+        </div>
+        <div class="field">
+          <label for="p1_email">Email / Alt Phone</label>
+          <input type="text" id="p1_email" placeholder="email@example.com" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Plaintiff 2 (optional) -->
+    <section>
+      <h2>Plaintiff 2 <span style="font-weight:400;color:#aaa;font-size:11px;">(optional)</span></h2>
+      <div class="party-grid">
+        <div class="field span2">
+          <label for="p2_name">Full Name</label>
+          <input type="text" id="p2_name" placeholder="Full legal name" />
+        </div>
+        <div class="field span2">
+          <label for="p2_address">Address</label>
+          <input type="text" id="p2_address" placeholder="Street address" />
+        </div>
+        <div class="field">
+          <label for="p2_city">City</label>
+          <input type="text" id="p2_city" placeholder="City" />
+        </div>
+        <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;grid-column:span 1;">
+          <div class="field">
+            <label for="p2_state">State</label>
+            <input type="text" id="p2_state" placeholder="WA" maxlength="2" />
+          </div>
+          <div class="field">
+            <label for="p2_zip">Zip</label>
+            <input type="text" id="p2_zip" placeholder="98101" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="p2_phone">Phone</label>
+          <input type="tel" id="p2_phone" placeholder="206-555-0000" />
+        </div>
+        <div class="field">
+          <label for="p2_email">Email / Alt Phone</label>
+          <input type="text" id="p2_email" placeholder="email@example.com" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Defendant 1 -->
+    <section>
+      <h2>Defendant 1</h2>
+      <div class="party-grid">
+        <div class="field span2">
+          <label for="d1_name">Full Name / Business Name <span class="req">*</span></label>
+          <input type="text" id="d1_name" required placeholder="Full legal name or business name" />
+          <span class="error-msg">Name is required</span>
+        </div>
+        <div class="field span2">
+          <label for="d1_address">Address</label>
+          <input type="text" id="d1_address" placeholder="Street address" />
+        </div>
+        <div class="field">
+          <label for="d1_city">City</label>
+          <input type="text" id="d1_city" placeholder="City" />
+        </div>
+        <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;grid-column:span 1;">
+          <div class="field">
+            <label for="d1_state">State</label>
+            <input type="text" id="d1_state" placeholder="WA" maxlength="2" />
+          </div>
+          <div class="field">
+            <label for="d1_zip">Zip</label>
+            <input type="text" id="d1_zip" placeholder="98101" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="d1_phone">Phone</label>
+          <input type="tel" id="d1_phone" placeholder="206-555-0000" />
+        </div>
+        <div class="field">
+          <label for="d1_email">Email / Alt Phone</label>
+          <input type="text" id="d1_email" placeholder="email@example.com" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Defendant 2 (optional) -->
+    <section>
+      <h2>Defendant 2 <span style="font-weight:400;color:#aaa;font-size:11px;">(optional)</span></h2>
+      <div class="party-grid">
+        <div class="field span2">
+          <label for="d2_name">Full Name / Business Name</label>
+          <input type="text" id="d2_name" placeholder="Full legal name or business name" />
+        </div>
+        <div class="field span2">
+          <label for="d2_address">Address</label>
+          <input type="text" id="d2_address" placeholder="Street address" />
+        </div>
+        <div class="field">
+          <label for="d2_city">City</label>
+          <input type="text" id="d2_city" placeholder="City" />
+        </div>
+        <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;grid-column:span 1;">
+          <div class="field">
+            <label for="d2_state">State</label>
+            <input type="text" id="d2_state" placeholder="WA" maxlength="2" />
+          </div>
+          <div class="field">
+            <label for="d2_zip">Zip</label>
+            <input type="text" id="d2_zip" placeholder="98101" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="d2_phone">Phone</label>
+          <input type="tel" id="d2_phone" placeholder="206-555-0000" />
+        </div>
+        <div class="field">
+          <label for="d2_email">Email / Alt Phone</label>
+          <input type="text" id="d2_email" placeholder="email@example.com" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Interpreter -->
+    <section>
+      <h2>Interpreter</h2>
+      <div class="grid full" style="gap:14px;">
+        <div class="field">
+          <label>Interpreter required for plaintiff?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="interp_plaintiff" value="no" checked /> No</label>
+            <label><input type="radio" name="interp_plaintiff" value="yes" /> Yes</label>
+          </div>
+        </div>
+        <div id="interp_plaintiff_details" class="grid conditional" style="grid-template-columns:1fr 1fr;gap:12px 16px;">
+          <div class="field">
+            <label for="interp_p_name">Interpreter Name</label>
+            <input type="text" id="interp_p_name" placeholder="Name" />
+          </div>
+          <div class="field">
+            <label for="interp_p_lang">Language</label>
+            <input type="text" id="interp_p_lang" placeholder="e.g. Spanish" />
+          </div>
+        </div>
+
+        <div class="field" style="border-top:1px solid #eee;padding-top:14px;">
+          <label>Interpreter required for defendant?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="interp_defendant" value="no" checked /> No</label>
+            <label><input type="radio" name="interp_defendant" value="yes" /> Yes</label>
+          </div>
+        </div>
+        <div id="interp_defendant_details" class="grid conditional" style="grid-template-columns:1fr 1fr;gap:12px 16px;">
+          <div class="field">
+            <label for="interp_d_name">Interpreter Name</label>
+            <input type="text" id="interp_d_name" placeholder="Name" />
+          </div>
+          <div class="field">
+            <label for="interp_d_lang">Language</label>
+            <input type="text" id="interp_d_lang" placeholder="e.g. Mandarin" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Claim Details -->
+    <section>
+      <h2>Claim Details</h2>
+      <div class="grid full" style="gap:14px;">
+        <div class="grid">
+          <div class="field">
+            <label for="claimantName">Claimant Name</label>
+            <input type="text" id="claimantName" placeholder="Person filing the claim" />
+          </div>
+          <div class="field">
+            <label for="claimAmount">Claim Amount <span class="req">*</span></label>
+            <input type="text" id="claimAmount" required placeholder="e.g. $3,500.00" />
+            <span class="error-msg">Claim amount is required</span>
+          </div>
+          <div class="field">
+            <label for="incidentDate">Incident Date <span class="req">*</span></label>
+            <input type="date" id="incidentDate" required />
+            <span class="error-msg">Incident date is required</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Reason(s) for Claim <span class="req">*</span></label>
+          <div class="checkbox-group" id="reasons">
+            <label><input type="checkbox" value="Faulty_Workmanship" /> Faulty Workmanship</label>
+            <label><input type="checkbox" value="Merchandise" /> Merchandise</label>
+            <label><input type="checkbox" value="Auto_damages" /> Auto Damages</label>
+            <label><input type="checkbox" value="wages" /> Wages</label>
+            <label><input type="checkbox" value="Loan" /> Loan</label>
+            <label><input type="checkbox" value="Return_of_Deposit" /> Return of Deposit</label>
+            <label><input type="checkbox" value="Rent" /> Rent</label>
+            <label><input type="checkbox" value="Property_Damage" /> Property Damage</label>
+            <label><input type="checkbox" value="Other" /> Other</label>
+          </div>
+          <span class="error-msg" id="reasons_error">Select at least one reason</span>
+        </div>
+
+        <div class="grid conditional" id="auto_damages_date_row" style="grid-template-columns:1fr 1fr;gap:12px 16px;">
+          <div class="field">
+            <label for="autoDamagesDate">Auto Damages — Date of Accident</label>
+            <input type="date" id="autoDamagesDate" />
+          </div>
+        </div>
+
+        <div class="grid conditional" id="other_reason_row" style="grid-template-columns:1fr;gap:12px;">
+          <div class="field">
+            <label for="otherReasonName">Other Reason — Description</label>
+            <input type="text" id="otherReasonName" placeholder="Describe the other reason" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="explanation">Explanation of Claim <span class="req">*</span></label>
+          <textarea id="explanation" required placeholder="Describe the facts of your claim in detail…" rows="5"></textarea>
+          <span class="error-msg">Explanation is required</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Servicemember Civil Relief -->
+    <section>
+      <h2>Servicemember Civil Relief Act</h2>
+      <div class="grid full" style="gap:14px;">
+        <div class="field">
+          <label>Is any defendant covered by the Servicemember Civil Relief Act?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="smcr" value="no" checked /> No</label>
+            <label><input type="radio" name="smcr" value="yes" /> Yes</label>
+            <label><input type="radio" name="smcr" value="unknown" /> Unknown</label>
+          </div>
+        </div>
+        <div class="field conditional" id="smcr_yes_row">
+          <label for="smcr_facts">Supporting facts (covered)</label>
+          <textarea id="smcr_facts" rows="3" placeholder="State the facts supporting that the defendant is covered…"></textarea>
+        </div>
+        <div class="field conditional" id="smcr_no_row">
+          <label for="smcr_reason">Reason defendant is not covered</label>
+          <textarea id="smcr_reason" rows="3" placeholder="e.g. Defendant is a business entity and not a servicemember."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Signature -->
+    <section>
+      <h2>Signature</h2>
+      <div class="grid thirds">
+        <div class="field span3">
+          <label for="sig_name">Print or Type Name <span class="req">*</span></label>
+          <input type="text" id="sig_name" required placeholder="Full name" />
+          <span class="error-msg">Name is required</span>
+        </div>
+        <div class="field">
+          <label for="sig_city">City <span class="req">*</span></label>
+          <input type="text" id="sig_city" required placeholder="City" />
+          <span class="error-msg">City is required</span>
+        </div>
+        <div class="field">
+          <label for="sig_state">State <span class="req">*</span></label>
+          <input type="text" id="sig_state" required placeholder="WA" maxlength="2" />
+          <span class="error-msg">State is required</span>
+        </div>
+        <div class="field">
+          <label for="sig_date">Date <span class="req">*</span></label>
+          <input type="date" id="sig_date" required />
+          <span class="error-msg">Date is required</span>
+        </div>
+      </div>
+    </section>
+
+    <p id="status"></p>
+    <div class="submit-row">
+      <button type="submit" id="submitBtn">Generate &amp; Download PDF</button>
+    </div>
+
+  </form>
+
+  <script>
+    // Toggle interpreter detail rows
+    document.querySelectorAll('input[name="interp_plaintiff"]').forEach(r =>
+      r.addEventListener('change', () => {
+        const show = document.querySelector('input[name="interp_plaintiff"]:checked').value === 'yes';
+        document.getElementById('interp_plaintiff_details').classList.toggle('visible', show);
+      })
+    );
+    document.querySelectorAll('input[name="interp_defendant"]').forEach(r =>
+      r.addEventListener('change', () => {
+        const show = document.querySelector('input[name="interp_defendant"]:checked').value === 'yes';
+        document.getElementById('interp_defendant_details').classList.toggle('visible', show);
+      })
+    );
+
+    // Toggle SMCR conditional rows
+    document.querySelectorAll('input[name="smcr"]').forEach(r =>
+      r.addEventListener('change', () => {
+        const val = document.querySelector('input[name="smcr"]:checked').value;
+        document.getElementById('smcr_yes_row').classList.toggle('visible', val === 'yes');
+        document.getElementById('smcr_no_row').classList.toggle('visible', val === 'no');
+      })
+    );
+    // Initial state for smcr (default = no)
+    document.getElementById('smcr_no_row').classList.add('visible');
+
+    // Toggle reason-specific fields
+    document.getElementById('reasons').addEventListener('change', () => {
+      const checked = [...document.querySelectorAll('#reasons input:checked')].map(c => c.value);
+      document.getElementById('auto_damages_date_row').classList.toggle('visible', checked.includes('Auto_damages'));
+      document.getElementById('other_reason_row').classList.toggle('visible', checked.includes('Other'));
+    });
+
+    // Validate a required field
+    function validateField(el) {
+      const field = el.closest('.field');
+      if (!field) return true;
+      const invalid = el.required && !el.value.trim();
+      field.classList.toggle('invalid', invalid);
+      return !invalid;
+    }
+
+    document.querySelectorAll('input[required], textarea[required]').forEach(el => {
+      el.addEventListener('blur', () => validateField(el));
+    });
+
+    function v(id) { return document.getElementById(id).value.trim() || undefined; }
+    function vReq(id) { return document.getElementById(id).value.trim(); }
+
+    document.getElementById('claimForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('status');
+      const btn = document.getElementById('submitBtn');
+
+      // Validate required fields
+      let valid = true;
+      document.querySelectorAll('input[required], textarea[required]').forEach(el => {
+        if (!validateField(el)) valid = false;
+      });
+
+      const reasons = [...document.querySelectorAll('#reasons input:checked')].map(c => c.value);
+      const reasonsError = document.getElementById('reasons_error');
+      if (reasons.length === 0) {
+        reasonsError.style.display = 'block';
+        valid = false;
+      } else {
+        reasonsError.style.display = 'none';
+      }
+
+      if (!valid) {
+        status.textContent = 'Please fix the errors above.';
+        status.className = 'error';
+        return;
+      }
+
+      // Build FormData payload
+      const interpPlaintiffYes = document.querySelector('input[name="interp_plaintiff"]:checked').value === 'yes';
+      const interpDefendantYes = document.querySelector('input[name="interp_defendant"]:checked').value === 'yes';
+      const smcr = document.querySelector('input[name="smcr"]:checked').value;
+
+      const p2name = v('p2_name');
+      const d2name = v('d2_name');
+
+      const payload = {
+        division: document.getElementById('division').value,
+        plaintiffs: [
+          { name: vReq('p1_name'), address: v('p1_address'), city: v('p1_city'), state: v('p1_state'), zip: v('p1_zip'), phone: v('p1_phone'), email: v('p1_email') },
+          ...(p2name ? [{ name: p2name, address: v('p2_address'), city: v('p2_city'), state: v('p2_state'), zip: v('p2_zip'), phone: v('p2_phone'), email: v('p2_email') }] : []),
+        ],
+        defendants: [
+          { name: vReq('d1_name'), address: v('d1_address'), city: v('d1_city'), state: v('d1_state'), zip: v('d1_zip'), phone: v('d1_phone'), email: v('d1_email') },
+          ...(d2name ? [{ name: d2name, address: v('d2_address'), city: v('d2_city'), state: v('d2_state'), zip: v('d2_zip'), phone: v('d2_phone'), email: v('d2_email') }] : []),
+        ],
+        interpreterPlaintiff: { required: interpPlaintiffYes, name: v('interp_p_name'), language: v('interp_p_lang') },
+        interpreterDefendant: { required: interpDefendantYes, name: v('interp_d_name'), language: v('interp_d_lang') },
+        claimantName: v('claimantName'),
+        claimAmount: vReq('claimAmount'),
+        incidentDate: vReq('incidentDate'),
+        claim: {
+          reasons,
+          autoDamagesAccidentDate: reasons.includes('Auto_damages') ? v('autoDamagesDate') : undefined,
+          otherReasonName: reasons.includes('Other') ? v('otherReasonName') : undefined,
+          explanation: vReq('explanation'),
+        },
+        serviceMemberCivilRelief: {
+          status: smcr,
+          factsIfCovered: smcr === 'yes' ? v('smcr_facts') : undefined,
+          reasonIfNotCovered: smcr === 'no' ? v('smcr_reason') : undefined,
+        },
+        signature: {
+          city: vReq('sig_city'),
+          state: vReq('sig_state'),
+          date: vReq('sig_date'),
+          plaintiffName: vReq('sig_name'),
+        },
+      };
+
+      btn.disabled = true;
+      status.className = '';
+      status.textContent = 'Generating PDF…';
+
+      try {
+        const res = await fetch('/fill', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Server error');
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'notice-of-small-claim-filled.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        status.textContent = 'PDF downloaded successfully!';
+      } catch (err) {
+        status.textContent = 'Error: ' + err.message;
+        status.className = 'error';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

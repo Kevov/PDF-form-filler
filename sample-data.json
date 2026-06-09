@@ -1,0 +1,48 @@
+{
+  "clerk": "Jane Smith",
+  "division": "West Division, Seattle Courthouse, 516 3rd Ave, Room E-327 Seattle WA 98104",
+  "smallClaimNumber": "SC-2025-001",
+  "plaintiffs": [
+    {
+      "name": "Alice Johnson",
+      "address": "123 Main St",
+      "city": "Seattle",
+      "state": "WA",
+      "zip": "98101",
+      "phone": "206-555-1234",
+      "email": "alice@example.com"
+    }
+  ],
+  "defendants": [
+    {
+      "name": "Bob's Auto Repair",
+      "address": "456 Mechanic Ave",
+      "city": "Seattle",
+      "state": "WA",
+      "zip": "98104",
+      "phone": "206-555-5678",
+      "email": "bobs@example.com"
+    }
+  ],
+  "interpreterPlaintiff": {
+    "required": false
+  },
+  "claimantName": "Alice Johnson",
+  "claimAmount": "$3,500.00",
+  "incidentDate": "2025-03-15",
+  "claim": {
+    "reasons": ["Faulty_Workmanship", "Auto_Damages"],
+    "autoDamagesAccidentDate": "2025-03-15",
+    "explanation": "Defendant performed brake repairs on my vehicle on March 15, 2025. Shortly after leaving the shop, the brakes failed, causing minor collision damage. Defendant refuses to refund the repair cost or cover the resulting damage."
+  },
+  "serviceMemberCivilRelief": {
+    "status": "no",
+    "reasonIfNotCovered": "Defendant is a business entity and is not a servicemember."
+  },
+  "signature": {
+    "city": "Seattle",
+    "state": "WA",
+    "date": "2025-06-09",
+    "plaintiffName": "Alice Johnson"
+  }
+}
