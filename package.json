@@ -1,11 +1,13 @@
 {
   "name": "pdf-form-filler",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/index.ts",
+    "prestart": "npm run build",
+    "start": "node dist/server.js",
     "dev": "ts-node src/server.ts",
+    "cli": "ts-node src/index.ts",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },

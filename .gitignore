@@ -47,6 +47,9 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# Stray compiled output from ad-hoc tsc runs (source lives in tests/*.ts)
+tests/*.js
+
 # Optional npm cache directory
 .npm
 
